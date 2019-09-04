@@ -6,7 +6,7 @@ import dj_database_url
 from configurations import Configuration
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-ROOT_DIR = environ.Path(__file__) - 3 
+ROOT_DIR = environ.Path(__file__) - 3
 
 environ.Env.read_env(str(ROOT_DIR.path('.env')))
 
