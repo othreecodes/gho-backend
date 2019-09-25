@@ -36,3 +36,5 @@ django-storages==1.7.1
 boto3==1.9.93
 django-extensions==2.2.1
 django-environ==0.4.5
+phonenumbers
+django-phonenumber-field

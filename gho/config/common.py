@@ -28,6 +28,8 @@ class Common(Configuration):
 
         # Your apps
         'gho.users',
+        'gho.core',
+        # 'jet_django',
 
     )
 
