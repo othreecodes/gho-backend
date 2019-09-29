@@ -31,6 +31,10 @@ class Phonenumber(BaseModel):
     is_primary = models.BooleanField(default=False)
     owner_email = models.EmailField()
 
+    class Meta:
+        verbose_name = "Phone Number"
+
+
 class UserProfile(BaseModel):
     referral_code = models.CharField(max_length=120)
     user = models.OneToOneField('users.User',on_delete=models.CASCADE)
@@ -87,19 +91,28 @@ class Referral(BaseModel):
     owner = models.OneToOneField('users.User',on_delete=models.CASCADE,related_name="owner")
     referred = models.OneToOneField('users.User',on_delete=models.CASCADE, related_name="referred")
 
+    class Meta:
+        verbose_name = "User referral"
 
 class Subscription(BaseModel):
     name = models.CharField(max_length=256)
     price = models.FloatField(default=0.0)
     description = models.TextField()
-    discount = models.FloatField(0.0)
+    discount = models.FloatField(default=0.0)
     number_of_refferal_for_free = models.IntegerField()
 
+    class Meta:
+        verbose_name = "Gho Subscription Package"
 
 class UserSubscription(BaseModel):
     subscriber = models.OneToOneField(User, on_delete=models.CASCADE)
     subscription = models.ForeignKey(Subscription,on_delete=models.CASCADE)
     is_free = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name= "Users that have Subcribed"
+        verbose_name_plural = "Users that have Subcribed"
+
 
 class Balance(BaseModel):
 
@@ -107,3 +120,89 @@ class Balance(BaseModel):
     book_balance = models.FloatField(default=0.0) 
     available_balance = models.FloatField(default=0.0) 
     active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name= "Gho Balance"
+        verbose_name_plural = "Gho Balances"
+
+class AllBanks(BaseModel):
+
+    name = models.CharField(max_length=100)
+    acronym = models.CharField(max_length=50)
+    bank_code = models.CharField(max_length=50)
+ 
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "All Banks"
+
+
+class Bank(models.Model):
+
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    bank = models.ForeignKey(AllBanks, on_delete=models.CASCADE)
+    account_name = models.CharField(max_length=100)
+    account_number = models.CharField(max_length=50)
+    account_type = models.CharField(max_length=50)
+    
+class Transaction(BaseModel):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transaction')
+    reference = models.CharField(max_length=200)
+    status = models.CharField(max_length=200)
+    amount = models.FloatField(default=0.0)
+    new_balance = models.FloatField(default=0.0)
+
+
+
+class BankTransfer(Transaction):
+    bank = models.ForeignKey(Bank,on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = "Bank Transfers"
+
+class P2PTransfer(Transaction):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE,related_name="sender")
+    receipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recipient")
+
+    class Meta:
+        verbose_name_plural = "P2P Transfers"
+
+
+class Reward(BaseModel):
+    reward_owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_subscription = models.ForeignKey(UserSubscription,on_delete=models.CASCADE)
+    refferal = models.ForeignKey(Referral,on_delete=models.CASCADE)
+    
+    class Meta:
+        verbose_name_plural = "Gho Rewards"
+
+
+class Card(models.Model):
+    
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    authorization_code = models.CharField(max_length=200)
+    ctype = models.CharField(max_length=200)
+    cbin = models.CharField(max_length=200, default=None)
+    cbrand = models.CharField(max_length=200, default=None)
+    country_code = models.CharField(max_length=200, default=None)
+    first_name = models.CharField(max_length=200, default=None)
+    last_name = models.CharField(max_length=200, default=None)
+    number = models.CharField(max_length=200)
+    bank = models.CharField(max_length=200)
+    expiry_month = models.CharField(max_length=10)
+    expiry_year = models.CharField(max_length=10)
+    is_active = models.BooleanField(default=True)
+    is_deleted = models.BooleanField(default=False)
+    created_on = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.number
+
+    def delete(self):
+        self.is_active = False
+        self.is_deleted = True
+        self.save()
+
+
+    

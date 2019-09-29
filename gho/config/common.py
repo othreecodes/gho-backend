@@ -13,6 +13,7 @@ environ.Env.read_env(str(ROOT_DIR.path('.env')))
 class Common(Configuration):
 
     INSTALLED_APPS = (
+        'jet',
         'django.contrib.admin',
         'django.contrib.auth',
         'django.contrib.contenttypes',

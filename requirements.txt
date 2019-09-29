@@ -38,3 +38,4 @@ django-extensions==2.2.1
 django-environ==0.4.5
 phonenumbers
 django-phonenumber-field
+django-jet
