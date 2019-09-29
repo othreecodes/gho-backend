@@ -9,12 +9,16 @@ before_script:
 script:
   - docker-compose run --rm web bash -c "python wait_for_postgres.py &&
                                          ./manage.py test"
+before_install: 
+  # install heroku CLI 
+  - wget -qO- https://toolbelt.heroku.com/install.sh | sh 
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
     docker login --username=_ --password="5d20d697-5da1-40fb-ad79-1054d71bb416" registry.heroku.com;
     docker tag web registry.heroku.com/gho-prod/web;
     docker push registry.heroku.com/gho-prod/web;
+    heroku container: release web --app $ pacific-chamber-34520
     fi
   - if [ "$TRAVIS_BRANCH" == "qa" ]; then
     docker login --username=_ --password="$HEROKU_AUTH_TOKEN" registry.heroku.com;
