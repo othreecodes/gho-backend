@@ -1,9 +1,11 @@
 from rest_framework import viewsets, mixins
+from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .models import User, NewUserPhoneVerification
 from .permissions import IsUserOrReadOnly
 from .serializers import CreateUserSerializer, UserSerializer, SendNewPhonenumberSerializer
 from rest_framework.views import APIView
+from . import utils
 
 class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.UpdateModelMixin,
@@ -26,8 +28,7 @@ class UserCreateViewSet(mixins.CreateModelMixin,
     permission_classes = (AllowAny,)
 
 
-class SendNewPhonenumberVerifyViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
-
+class SendNewPhonenumberVerifyViewSet(mixins.CreateModelMixin,mixins.UpdateModelMixin, viewsets.GenericViewSet):
     """
     Sending of verification code
     """
@@ -35,16 +36,44 @@ class SendNewPhonenumberVerifyViewSet(mixins.CreateModelMixin,viewsets.GenericVi
     serializer_class = SendNewPhonenumberSerializer
     permission_classes = (AllowAny,)
 
-class VerifySignUpVerificationCodeView(APIView):
 
-    """
-    Verify Sign up code
-    """
-    permission_classes = (AllowAny,)
+    def update(self, request, pk=None):
+        verification_object = self.get_object()
+        code = request.data.get("code")
 
-    def post(self, request, format=None):
-        phone_number = request.data.get("phone_number", None)
-        code = request.data.get("code", None)
+        if code is None:
+            return Response({"message":"Request not successful"}, 400)    
+
+        if verification_object.verification_code != code:
+            return Response({"message":"Verification code is incorrect"}, 400)    
+
+        code_status, msg = utils.validate_mobile_signup_sms(verification_object.phone_number, code)
         
+        content = {
+                'verification_code_status': str(code_status),
+                'message': msg,
+        }
+        return Response(content, 200)    
+
+
+
+
+# class VerifySignUpVerificationCodeView(mixins.CreateModelMixin,viewsets.GenericViewSet):
+
+#     """
+#     Verify Sign up code
+#     """
+#     permission_classes = (AllowAny,)
+#     queryset = NewUserPhoneVerification.objects.all()
+#     serializer_class = SendNewPhonenumberSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         phone_number = request.data.get("phone_number", None)
+#         code = request.data.get("code", None)
         
-        pass
+#         import pdb; pdb.set_trace()
+#         if None in (phone_number, code):
+#             return Response({"message":"Request not successful"}, 400)    
+
+        
+#         pass

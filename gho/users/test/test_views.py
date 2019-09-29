@@ -5,7 +5,7 @@ from nose.tools import ok_, eq_
 from rest_framework.test import APITestCase
 from rest_framework import status
 from faker import Faker
-from ..models import User
+from ..models import User,UserProfile,Referral
 from .factories import UserFactory
 
 fake = Faker()
@@ -32,7 +32,28 @@ class TestUserListTestCase(APITestCase):
         eq_(user.username, self.user_data.get('username'))
         ok_(check_password(self.user_data.get('password'), user.password))
 
+    def test_post_request_with_valid_data_succeeds_and_profile_is_created(self):
+        response = self.client.post(self.url, self.user_data)
+        eq_(response.status_code, status.HTTP_201_CREATED)
 
+        eq_(UserProfile.objects.filter(user__username=self.user_data['username']).exists(),True)
+
+    def test_post_request_with_valid_data_succeeds_referral_is_created_if_code_is_valid(self):
+        
+        referring_user = UserFactory()
+        self.user_data.update({"referral_code":referring_user.userprofile.referral_code})
+        response = self.client.post(self.url, self.user_data)
+        eq_(response.status_code, status.HTTP_201_CREATED)
+
+        eq_(Referral.objects.filter(referred__username=self.user_data['username'],owner__username=referring_user.username).exists(),True)
+
+
+    def test_post_request_with_valid_data_succeeds_referral_is_not_created_if_code_is_invalid(self):
+        
+        self.user_data.update({"referral_code":"FAKECODE"})
+        response = self.client.post(self.url, self.user_data)
+        eq_(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
 class TestUserDetailTestCase(APITestCase):
     """
     Tests /users detail operations.

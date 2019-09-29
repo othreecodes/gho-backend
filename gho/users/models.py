@@ -22,6 +22,7 @@ class User(AbstractUser):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+        UserProfile.objects.create(user=instance)
 
 class Phonenumber(BaseModel):
     number = models.CharField(max_length=24)
@@ -31,6 +32,26 @@ class Phonenumber(BaseModel):
 
 class UserProfile(BaseModel):
     referral_code = models.CharField(max_length=120)
+    user = models.OneToOneField('users.User',on_delete=models.CASCADE)
+
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            self.referral_code = self.generate_new_referal_code()
+        return super(UserProfile, self).save(*args, **kwargs)
+
+
+    def generate_new_referal_code(self):
+        """
+        Returns a unique passcode
+        """
+        def _passcode():
+            return str(uuid.uuid4().hex)[0:8]
+        passcode = _passcode()
+        while UserProfile.objects.filter(referral_code=passcode).exists():
+            passcode = _passcode()
+        return passcode
+
 
 class PhoneVerification(BaseModel):
    
@@ -58,3 +79,13 @@ class NewUserPhoneVerification(BaseModel):
 
     class Meta:
         verbose_name_plural = "New User Verification Codes"
+
+
+
+class Referral(BaseModel):
+    owner = models.OneToOneField('users.User',on_delete=models.CASCADE,related_name="owner")
+    referred = models.OneToOneField('users.User',on_delete=models.CASCADE, related_name="referred")
+
+
+class Subscription():
+    pass
