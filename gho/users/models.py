@@ -23,6 +23,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
         UserProfile.objects.create(user=instance)
+        Balance.objects.create(user=instance)
 
 class Phonenumber(BaseModel):
     number = models.CharField(max_length=24)
@@ -87,10 +88,18 @@ class Referral(BaseModel):
     referred = models.OneToOneField('users.User',on_delete=models.CASCADE, related_name="referred")
 
 
-class Subscription():
-    pass
+class Subscription(BaseModel):
+    name = models.CharField(max_length=256)
+    price = models.FloatField(default=0.0)
+    description = models.TextField()
+    discount = models.FloatField(0.0)
+    number_of_refferal_for_free = models.IntegerField()
 
 
+class UserSubscription(BaseModel):
+    subscriber = models.OneToOneField(User, on_delete=models.CASCADE)
+    subscription = models.ForeignKey(Subscription,on_delete=models.CASCADE)
+    is_free = models.BooleanField(default=False)
 
 class Balance(BaseModel):
 
