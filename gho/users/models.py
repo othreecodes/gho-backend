@@ -89,3 +89,12 @@ class Referral(BaseModel):
 
 class Subscription():
     pass
+
+
+
+class Balance(BaseModel):
+
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    book_balance = models.FloatField(default=0.0) 
+    available_balance = models.FloatField(default=0.0) 
+    active = models.BooleanField(default=True)

@@ -18,6 +18,7 @@ after_success:
     docker login --username=_ --password="5d20d697-5da1-40fb-ad79-1054d71bb416" registry.heroku.com;
     docker tag web registry.heroku.com/gho-prod/web;
     docker push registry.heroku.com/gho-prod/web;
+    heroku container:push web
     heroku container:release web --app $ pacific-chamber-34520
     fi
   - if [ "$TRAVIS_BRANCH" == "qa" ]; then
