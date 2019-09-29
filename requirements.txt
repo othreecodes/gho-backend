@@ -39,3 +39,4 @@ django-environ==0.4.5
 phonenumbers
 django-phonenumber-field
 django-jet
+whitenoise
